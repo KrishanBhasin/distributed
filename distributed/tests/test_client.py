@@ -58,14 +58,7 @@ from distributed.compatibility import WINDOWS
 from distributed.metrics import time
 from distributed.scheduler import Scheduler, KilledWorker
 from distributed.sizeof import sizeof
-from distributed.utils import (
-    mp_context,
-    sync,
-    tmp_text,
-    tokey,
-    tmpfile,
-    is_valid_xml,
-)
+from distributed.utils import mp_context, sync, tmp_text, tokey, tmpfile, is_valid_xml
 from distributed.utils_test import (
     cluster,
     slowinc,
@@ -3411,8 +3404,12 @@ async def test_get_foo_lost_keys(c, s, u, v, w):
 )
 async def test_bad_tasks_fail(c, s, a, b):
     f = c.submit(sys.exit, 0)
-    with pytest.raises(KilledWorker) as info:
-        await f
+    with captured_logger(logging.getLogger("distributed.scheduler")) as logger:
+        with pytest.raises(KilledWorker) as info:
+            await f
+
+    text = logger.getvalue()
+    assert f.key in text
 
     assert info.value.last_worker.nanny in {a.address, b.address}
     await asyncio.gather(a.close(), b.close())
@@ -5410,10 +5407,10 @@ async def test_client_name(s, a, b):
     await c.close()
 
 
-def test_client_doesnt_close_given_loop(loop, s, a, b):
-    with Client(s["address"], loop=loop) as c:
+def test_client_doesnt_close_given_loop(loop_in_thread, s, a, b):
+    with Client(s["address"], loop=loop_in_thread) as c:
         assert c.submit(inc, 1).result() == 2
-    with Client(s["address"], loop=loop) as c:
+    with Client(s["address"], loop=loop_in_thread) as c:
         assert c.submit(inc, 2).result() == 3
 
 
@@ -5814,6 +5811,12 @@ async def test_wait_for_workers(c, s, a, b):
     assert time() < start + 1
     await w.close()
 
+    with pytest.raises(TimeoutError) as info:
+        await c.wait_for_workers(n_workers=10, timeout="1 ms")
+
+    assert "2/10" in str(info.value).replace(" ", "")
+    assert "1 ms" in str(info.value)
+
 
 @pytest.mark.skipif(WINDOWS, reason="num_fds not supported on windows")
 @pytest.mark.asyncio
@@ -6131,7 +6134,7 @@ async def test_performance_report(c, s, a, b):
 
 
 @pytest.mark.asyncio
-async def test_client_gather_semaphor_loop(cleanup):
+async def test_client_gather_semaphore_loop(cleanup):
     async with Scheduler(port=0) as s:
         async with Client(s.address, asynchronous=True) as c:
             assert c._gather_semaphore._loop is c.loop.asyncio_loop
@@ -6166,3 +6169,28 @@ async def test_mixed_compression(cleanup):
                     x = da.ones((10000, 10000))
                     y = x + x.T
                     await c.compute(y.sum())
+
+
+@gen_cluster(client=True)
+async def test_futures_in_subgraphs(c, s, a, b):
+    """Regression test of <https://github.com/dask/distributed/issues/4145>"""
+
+    dd = pytest.importorskip("dask.dataframe")
+    import pandas as pd
+
+    ddf = dd.from_pandas(
+        pd.DataFrame(
+            dict(
+                uid=range(50),
+                enter_time=pd.date_range(
+                    start="2020-01-01", end="2020-09-01", periods=50, tz="UTC"
+                ),
+            )
+        ),
+        npartitions=5,
+    )
+
+    ddf = ddf[ddf.uid.isin(range(29))].persist()
+    ddf["local_time"] = ddf.enter_time.dt.tz_convert("US/Central")
+    ddf["day"] = ddf.enter_time.dt.day_name()
+    ddf = await c.submit(dd.categorical.categorize, ddf, columns=["day"], index=False)

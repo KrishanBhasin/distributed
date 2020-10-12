@@ -1,6 +1,109 @@
 Changelog
 =========
 
+2.30.0 - 2020-10-06
+-------------------
+
+- Support ``SubgraphCallable`` in ``str_graph()`` (:pr:`4148`) `Mads R. B. Kristensen`_
+- Handle exceptions in ``BatchedSend`` (:pr:`4135`) `Tom Augspurger`_
+- Fix for missing ``:`` in autosummary docs (:pr:`4143`) `Gil Forsyth`_
+- Limit GPU metrics to visible devices only (:pr:`3810`) `Jacob Tomlinson`_
+
+
+2.29.0 - 2020-10-02
+-------------------
+
+- Use ``pandas.testing`` (:pr:`4138`) `jakirkham`_
+- Fix a few typos (:pr:`4131`) `Pav A`_
+- Return right away in ``Cluster.close`` if cluster is already closed (:pr:`4116`) `Tom Rochette`_
+- Update async doc with example on ``.compute()`` vs ``client.compute()`` (:pr:`4137`) `Benjamin Zaitlen`_
+- Correctly tear down ``LoopRunner`` in ``Client`` (:pr:`4112`) `Sergey Kozlov`_
+- Simplify ``Client._graph_to_futures()`` (:pr:`4127`) `Mads R. B. Kristensen`_
+- Cleanup new exception traceback (:pr:`4125`) `Krishan Bhasin`_
+- Stop writing config files by default (:pr:`4123`) `Matthew Rocklin`_
+
+
+2.28.0 - 2020-09-25
+-------------------
+
+- Fix SSL ``connection_args`` for ``progressbar`` connect (:pr:`4122`) `jennalc`_
+
+
+2.27.0 - 2020-09-18
+-------------------
+
+- Fix registering a worker plugin with ``name`` arg (:pr:`4105`) `Nick Evans`_
+- Support different ``remote_python`` paths on cluster nodes (:pr:`4085`) `Abdulelah Bin Mahfoodh`_
+- Allow ``RuntimeError`` s when closing global clients (:pr:`4115`) `Matthew Rocklin`_
+- Match ``pre-commit`` in dask (:pr:`4049`) `Julia Signell`_
+- Update ``super`` usage (:pr:`4110`) `Poruri Sai Rahul`_
+
+
+2.26.0 - 2020-09-11
+-------------------
+
+- Add logging for adaptive start and stop (:pr:`4101`) `Matthew Rocklin`_
+- Don't close a nannied worker if it hasn't yet started (:pr:`4093`) `Matthew Rocklin`_
+- Respect timeouts when closing clients synchronously (:pr:`4096`) `Matthew Rocklin`_
+- Log when downloading a preload script (:pr:`4094`) `Matthew Rocklin`_
+- ``dask-worker --nprocs`` accepts negative values (:pr:`4089`) `Dror Speiser`_
+- Support zero-worker clients (:pr:`4090`) `Matthew Rocklin`_
+- Exclude ``fire-and-forget`` client from metrics (:pr:`4078`) `Tom Augspurger`_
+- Drop ``Serialized.deserialize()`` method (:pr:`4073`) `jakirkham`_
+- Add ``timeout=`` keyword to ``Client.wait_for_workers`` method (:pr:`4087`) `Matthew Rocklin`_
+
+
+2.25.0 - 2020-08-28
+-------------------
+
+- Update for black (:pr:`4081`) `Tom Augspurger`_
+- Provide informative error when connecting an older version of Dask (:pr:`4076`) `Matthew Rocklin`_
+- Simplify ``pack_frames`` (:pr:`4068`) `jakirkham`_
+- Simplify ``frame_split_size`` (:pr:`4067`) `jakirkham`_
+- Use ``list.insert`` to add prelude up front (:pr:`4066`) `jakirkham`_
+- Graph helper text (:pr:`4064`) `Julia Signell`_
+- Graph dashboard: Reset container data if task number is too large (:pr:`4056`) `Florian Jetter`_
+- Ensure semaphore picks correct ``IOLoop`` for threadpool workers (:pr:`4060`) `Florian Jetter`_
+- Add cluster log method (:pr:`4051`) `Jacob Tomlinson`_
+- Cleanup more exception tracebacks (:pr:`4054`) `Krishan Bhasin`_
+- Improve documentation of ``scheduler.locks`` options (:pr:`4062`) `Florian Jetter`_
+
+
+2.24.0 - 2020-08-22
+-------------------
+
+-   Move toolbar to above and fix y axis (#4043) `Julia Signell`_
+-   Make behavior clearer for how to get worker dashboard (#4047) `Julia Signell`_
+-   Worker dashboard clean up (#4046) `Julia Signell`_
+-   Add a default argument to the datasets and a possibility to override datasets (#4052) `Nils Braun`_
+-   Discover HTTP endpoints (#3744) `Martin Durant`_
+
+
+2.23.0 - 2020-08-14
+-------------------
+
+- Tidy up exception traceback in TCP Comms (:pr:`4042`) `Krishan Bhasin`_
+- Angle on the x-axis labels (:pr:`4030`) `Mathieu Dugré`_
+- Always set RMM's strides in the ``header`` (:pr:`4039`) `jakirkham`_
+- Fix documentation ``upload_file`` (:pr:`4038`) `Roberto Panai`_
+- Update UCX tests for new handshake step (:pr:`4036`) `jakirkham`_
+- Add test for informative errors in serialization cases (:pr:`4029`) `Matthew Rocklin`_
+- Add compression, pickle protocol to comm contexts (:pr:`4019`) `Matthew Rocklin`_
+- Make GPU plots robust to not having GPUs (:pr:`4008`) `Matthew Rocklin`_
+- Update ``PendingDeprecationWarning`` with correct version number (:pr:`4025`) `Matthias Bussonnier`_
+- Install PyTorch on CI (:pr:`4017`) `jakirkham`_
+- Try getting cluster ``dashboard_link`` before asking scheduler (:pr:`4018`) `Matthew Rocklin`_
+- Ignore writeable frames with builtin ``array`` (:pr:`4016`) `jakirkham`_
+- Just extend ``frames2`` by ``frames`` (:pr:`4015`) `jakirkham`_
+- Serialize builtin array (:pr:`4013`) `jakirkham`_
+- Use cuDF's ``assert_eq`` (:pr:`4014`) `jakirkham`_
+- Clear function cache whenever we upload a new file (:pr:`3993`) `Jack Xiaosong Xu`_
+- Emmit warning when assign/comparing string with ``Status`` ``Enum`` (:pr:`3875`) `Matthias Bussonnier`_
+- Track mutable frames (:pr:`4004`) `jakirkham`_
+- Improve ``bytes`` and ``bytearray`` serialization (:pr:`4009`) `jakirkham`_
+- Fix memory histogram values in dashboard (:pr:`4006`) `Willi Rath`_
+
+
 2.22.0 - 2020-07-31
 -------------------
 
@@ -1885,3 +1988,10 @@ significantly without many new features.
 .. _`Alexander Clausen`: https://github.com/sk1p
 .. _`Andrew Fulton`: https://github.com/andrewfulton9
 .. _`Jendrik Jördening`: https://github.com/jendrikjoe
+.. _`Jack Xiaosong Xu`: https://github.com/jackxxu
+.. _`Willi Rath`: https://github.com/willirath
+.. _`Roberto Panai`: https://github.com/rpanai
+.. _`Dror Speiser`: https://github.com/drorspei
+.. _`Poruri Sai Rahul`: https://github.com/rahulporuri
+.. _`jennalc`: https://github.com/jennalc
+.. _`Sergey Kozlov`: https://github.com/skozlovf
